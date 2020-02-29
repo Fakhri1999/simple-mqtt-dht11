@@ -6,18 +6,20 @@ let useSSL = hostname == "localhost" || protocol == "file:" ? false : true;
 client = new Paho.MQTT.Client(
   "broker.hivemq.com",
   Number(8000),
-  "browser-client"
+  `client-id-${parseInt(Math.random() * 1000)}`
 );
 
 // set callback handlers
 client.onConnectionLost = onConnectionLost;
 client.onMessageArrived = onMessageArrived;
+
 // connect the client
 client.connect({ onSuccess: onConnect, useSSL: useSSL });
 $("#led").bootstrapToggle("disable");
 
 // called when the client connects
 function onConnect() {
+  isSensorActive();
   console.log("onConnect");
   $("#led").bootstrapToggle("enable");
   client.subscribe("/fakhri19/esp32/#");
@@ -64,8 +66,8 @@ function onMessageArrived(message) {
     } else if (value == "OFF") {
       $("#led").bootstrapToggle("off", true);
     }
-    firstMessage = true;
   }
+  firstMessage = true;
   var currentdate = new Date();
   var datetime = `${currentdate.getDate()}/${currentdate.getMonth() +
     1}/${currentdate.getFullYear()}, ${currentdate.getHours()}:${currentdate.getMinutes()}:${currentdate.getSeconds()}`;
@@ -85,9 +87,6 @@ function checkLEDStatus() {
 }
 
 let firstMessage = false;
-$(document).ready(function() {
-  isSensorActive();
-});
 
 function isSensorActive() {
   setTimeout(function() {
