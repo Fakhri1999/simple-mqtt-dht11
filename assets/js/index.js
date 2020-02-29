@@ -1,6 +1,9 @@
+let hostname = window.location.hostname;
+let protocol = window.location.protocol;
+let useSSL = hostname == "localhost" || protocol == "file:" ? false : true;
+
 // Create a client instance
 client = new Paho.MQTT.Client(
-  // "127.0.0.1",
   "broker.hivemq.com",
   Number(8000),
   "browser-client"
@@ -9,13 +12,14 @@ client = new Paho.MQTT.Client(
 // set callback handlers
 client.onConnectionLost = onConnectionLost;
 client.onMessageArrived = onMessageArrived;
-
 // connect the client
-client.connect({ onSuccess: onConnect });
+client.connect({ onSuccess: onConnect, useSSL: useSSL });
+$("#led").bootstrapToggle("disable");
 
 // called when the client connects
 function onConnect() {
   console.log("onConnect");
+  $("#led").bootstrapToggle("enable");
   client.subscribe("/fakhri19/esp32/#");
 }
 
@@ -34,23 +38,39 @@ function onMessageArrived(message) {
   topic = topic.split("/");
   if (topic[3] == "temperature") {
     $("#temperature").html(value);
-    $("#temperature").parent().addClass("blink")
-    setTimeout(function(){
-      $("#temperature").parent().removeClass("blink")
-    }, 500)
+    $("#temperature")
+      .parent()
+      .addClass("blink");
+    setTimeout(function() {
+      $("#temperature")
+        .parent()
+        .removeClass("blink");
+    }, 500);
   } else if (topic[3] == "humidity") {
+    $("#time").addClass("blink");
     $("#humidity").html(value);
-    $("#humidity").parent().addClass("blink")
-    setTimeout(function(){
-      $("#humidity").parent().removeClass("blink")
-    }, 500)
+    $("#humidity")
+      .parent()
+      .addClass("blink");
+    setTimeout(function() {
+      $("#time").removeClass("blink");
+      $("#humidity")
+        .parent()
+        .removeClass("blink");
+    }, 500);
   } else if (topic[3] == "ledStatus") {
-    if(value == "ON"){
-      $('#led').bootstrapToggle('on', true)
-    } else if(value == "OFF"){
-      $('#led').bootstrapToggle('off', true)
+    if (value == "ON") {
+      $("#led").bootstrapToggle("on", true);
+    } else if (value == "OFF") {
+      $("#led").bootstrapToggle("off", true);
     }
+    firstMessage = true;
   }
+  var currentdate = new Date();
+  var datetime = `${currentdate.getDate()}/${currentdate.getMonth() +
+    1}/${currentdate.getFullYear()}, ${currentdate.getHours()}:${currentdate.getMinutes()}:${currentdate.getSeconds()}`;
+  console.log(datetime);
+  $("#time").html(datetime);
   console.log(`${topic[3]} : ${value}`);
 }
 
@@ -64,6 +84,20 @@ function checkLEDStatus() {
   return document.getElementById("led").checked;
 }
 
-function tes() {
-  console.log("Halo");
+let firstMessage = false;
+$(document).ready(function() {
+  isSensorActive();
+});
+
+function isSensorActive() {
+  setTimeout(function() {
+    if (!firstMessage) {
+      Swal.fire({
+        icon: "error",
+        title: "Sorry",
+        text: "The sensor is currently offline"
+      });
+      console.log("kosong");
+    }
+  }, 2500);
 }
