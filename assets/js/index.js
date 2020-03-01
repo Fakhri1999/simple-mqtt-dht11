@@ -4,8 +4,8 @@ let useSSL = hostname == "localhost" || protocol == "file:" ? false : true;
 
 // Create a client instance
 client = new Paho.MQTT.Client(
-  "broker.hivemq.com",
-  Number(8000),
+  "mqtt.flespi.io",
+  useSSL ? Number(443): Number(80),
   `client-id-${parseInt(Math.random() * 1000)}`
 );
 
@@ -14,7 +14,7 @@ client.onConnectionLost = onConnectionLost;
 client.onMessageArrived = onMessageArrived;
 
 // connect the client
-client.connect({ onSuccess: onConnect, useSSL: useSSL });
+client.connect({ onSuccess: onConnect, useSSL: useSSL, userName: "r10rm1D1yIS2n6hRnxC6B67EaHzswLKLDz2NqwCM4lCifJXs5qnumiYmPnF9YdLp", password: "" });
 $("#led").bootstrapToggle("disable");
 
 // called when the client connects
