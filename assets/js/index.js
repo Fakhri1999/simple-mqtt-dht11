@@ -5,7 +5,7 @@ let useSSL = hostname == "localhost" || protocol == "file:" ? false : true;
 // Create a client instance
 client = new Paho.MQTT.Client(
   "mqtt.flespi.io",
-  useSSL ? Number(443): Number(80),
+  useSSL ? Number(443) : Number(80),
   `client-id-${parseInt(Math.random() * 1000)}`
 );
 
@@ -14,14 +14,18 @@ client.onConnectionLost = onConnectionLost;
 client.onMessageArrived = onMessageArrived;
 
 // connect the client
-client.connect({ onSuccess: onConnect, useSSL: useSSL, userName: "r10rm1D1yIS2n6hRnxC6B67EaHzswLKLDz2NqwCM4lCifJXs5qnumiYmPnF9YdLp", password: "" });
+client.connect({
+  onSuccess: onConnect,
+  useSSL: useSSL,
+  userName: "r10rm1D1yIS2n6hRnxC6B67EaHzswLKLDz2NqwCM4lCifJXs5qnumiYmPnF9YdLp",
+  password: ""
+});
 $("#led").bootstrapToggle("disable");
 
 // called when the client connects
 function onConnect() {
   isSensorActive();
   console.log("onConnect");
-  $("#led").bootstrapToggle("enable");
   client.subscribe("/fakhri19/esp32/#");
 }
 
@@ -39,6 +43,7 @@ function onMessageArrived(message) {
   let value = message.payloadString;
   topic = topic.split("/");
   if (topic[3] == "temperature") {
+    $("#time").addClass("blink");
     $("#temperature").html(value);
     $("#temperature")
       .parent()
@@ -49,7 +54,6 @@ function onMessageArrived(message) {
         .removeClass("blink");
     }, 500);
   } else if (topic[3] == "humidity") {
-    $("#time").addClass("blink");
     $("#humidity").html(value);
     $("#humidity")
       .parent()
@@ -97,6 +101,8 @@ function isSensorActive() {
         text: "The sensor is currently offline"
       });
       console.log("kosong");
+    } else {
+      $("#led").bootstrapToggle("enable");
     }
   }, 2500);
 }
